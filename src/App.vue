@@ -1,28 +1,49 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <v-app>
+    <v-main>
+      <TopContent />
+      <MainContent />
+    </v-main>
+  </v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import MainContent from './components/MainContent';
+import TopContent from './components/TopContent';
 
 export default {
   name: 'App',
-  components: {
-    HelloWorld
-  }
-}
-</script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  components: {
+    MainContent,
+    TopContent
+  },
+
+  data: () => ({
+    //
+  }),
+  method: {
+    setCssVariable() {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    },
+    onResize() {
+      this.setCssVariable
+    }
+  },
+  created() {
+    // window.addEventListener('resize', this.onResize);
+  },
+  mounted() {
+
+  }
+};
+</script>
+<style lang="scss">
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif+TC:wght@200..900&display=swap');
+$fontFamilyNotoSans: 'Noto Sans', 'Noto Sans TC', 'sourcehansans-tc', 'Noto Sans S Chinese', 'PingFang TC', 'Microsoft JhengHei', Tahoma, Verdana, Arial, Helvetica, sans-serif;
+
+.v-application .v-application--wrap * {
+  font-family: $fontFamilyNotoSans !important;
 }
 </style>
