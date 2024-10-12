@@ -1,5 +1,5 @@
 <template>
-    <v-container>
+    <v-container fluid>
         <header class="header">
             <img src="../assets/header.png" alt="">
         </header>
@@ -27,6 +27,7 @@ export default {
 <style lang="scss">
 .container {
     padding: 0;
+    background-color: #000;
 }
 
 .header {

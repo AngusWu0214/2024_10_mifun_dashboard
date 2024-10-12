@@ -3,6 +3,8 @@
     <v-main>
       <TopContent />
       <MainContent />
+      <Footer />
+      <BottomNavigation />
     </v-main>
   </v-app>
 </template>
@@ -10,13 +12,17 @@
 <script>
 import MainContent from './components/MainContent';
 import TopContent from './components/TopContent';
+import Footer from './components/Footer';
+import BottomNavigation from './components/BottomNavigation';
 
 export default {
   name: 'App',
 
   components: {
     MainContent,
-    TopContent
+    TopContent,
+    Footer,
+    BottomNavigation
   },
 
   data: () => ({
