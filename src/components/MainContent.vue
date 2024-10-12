@@ -62,6 +62,9 @@
                   </v-expansion-panel-content>
                 </v-expansion-panel>
               </v-expansion-panels>
+              <div class="timeline-tips">
+                以上資料為各隊目前總積分，最終比賽結果依 2024 MDCG 福委會公告為準。
+              </div>
             </div>
             <div class="default-content d-flex flex-column align-center" v-else key="default">
               <img src="../assets/run_people.png" alt="">
@@ -122,7 +125,7 @@ export default {
   }
 
   .panel-container {
-    padding: 0 16px;
+    padding: 0 16px 16px 16px;
 
     .header-item {
       padding-right: 16px;
@@ -163,6 +166,15 @@ export default {
 
         }
       }
+    }
+
+    .timeline-tips {
+      font-family: Noto Sans CJK TC;
+      font-size: 12px;
+      font-weight: 400;
+      text-align: left;
+      margin-top: 16px;
+      color: #fff;
     }
   }
 
