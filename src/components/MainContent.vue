@@ -6,12 +6,14 @@
           {{ tabLabel }}
         </div>
       </transition>
-      <!-- <v-select class="px-2" label="請選擇國家隊" variant="underlined"
-        :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']" color="#fff" item-color="white"
-        dark>
-      </v-select> -->
       <transition name="fade" mode="out-in">
-        <div class="timeline-container" :key="tab" v-if="tab == 'timeline'">
+        <v-select v-if="tab !== 'board'" class="px-2" placeholder="請選擇國家隊" variant="underlined"
+          :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']" color="#fff" item-color="white"
+          dark v-model="activeTeam">
+        </v-select>
+      </transition>
+      <transition name="fade" mode="out-in">
+        <div class="board-container" :key="tab" v-if="tab == 'board'">
           <transition name="fade" mode="out-in">
             <div class="panel-container" v-if="sheetData" key="panel">
               <v-expansion-panels v-model="panel" accordion>
@@ -68,13 +70,27 @@
             </div>
             <div class="default-content d-flex flex-column align-center" v-else key="default">
               <img src="../assets/run_people.png" alt="">
-              <p>快來為你的國家隊加油</p>
+              <p>資料讀取中</p>
             </div>
           </transition>
 
         </div>
-        <div class="board-container" :key="tab" v-if="tab == 'board'"></div>
-        <div class="board-container" :key="tab" v-if="tab == 'team'"></div>
+        <div class="timeline-container" :key="tab" v-if="tab == 'timeline'"></div>
+        <div class="team-container" :key="tab" v-if="tab == 'team'">
+          <transition name="fade" mode="out-in">
+            <div class="member-container" v-if="activeTeam">
+              <div class="leader">
+                隊長：Larry | 副隊長：Matthew
+              </div>
+              <div class="mb-4">國家隊員:</div>
+              <div>Abby / Abby</div>
+            </div>
+            <div class="default-content d-flex flex-column align-center" v-else key="default">
+              <img src="../assets/sit_people.png" alt="">
+              <p>跟你的國家隊員一起暖身</p>
+            </div>
+          </transition>
+        </div>
       </transition>
 
     </div>
@@ -91,6 +107,7 @@ export default {
     tabTitle: '賽程表',
     panel: null,
     sheetData: 1,
+    activeTeam: 1
   }),
   computed: {
     ...mapState(useMainStore, ['tab', 'tabLabel']),
@@ -178,7 +195,7 @@ export default {
     }
   }
 
-  .timeline-container {
+  .board-container {
     margin-top: 48px;
 
     p {
@@ -188,6 +205,46 @@ export default {
       text-align: center;
       color: #fff;
       margin-top: 8px;
+    }
+  }
+
+  .team-container {
+    padding: 0 12px;
+
+    .member-container {
+      width: 100%;
+      background-color: rgba(#fff, .2);
+      // background: #FFFFFF33;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #fff;
+      .leader {
+        padding: 4px 8px;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 24px;
+        text-align: left;
+        color: #fff;
+        background-color: #1F714F;
+        border-radius: 8px;
+        display: inline-block;
+        margin-bottom: 16px;
+      }
+    }
+
+    .default-content {
+      margin-top: 26px;
+
+      p {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 24px;
+        text-align: center;
+        color: #fff;
+        margin-top: 8px;
+      }
     }
   }
 }
@@ -221,6 +278,14 @@ export default {
     color: #fff !important;
   }
 
+}
+
+.v-select__selections {
+  padding-left: 12px !important;
+}
+
+.v-input__append-inner {
+  padding-right: 12px !important;
 }
 
 .fade-enter-active,
