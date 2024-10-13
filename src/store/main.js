@@ -9,7 +9,7 @@ export const useMainStore = defineStore('Main', {
         isMobile: null,
         popup: null,
         popupQueue: null,
-        tab: 'team', //timeline,board,team
+        tab: 'timeline', //timeline,board,team
     }),
     getters: {
         formattedPhoneNumber: (state) => {

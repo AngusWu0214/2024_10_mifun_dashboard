@@ -75,7 +75,70 @@
           </transition>
 
         </div>
-        <div class="timeline-container" :key="tab" v-if="tab == 'timeline'"></div>
+        <div class="timeline-container" :key="tab" v-if="tab == 'timeline'">
+          <transition name="fade" mode="out-in">
+            <div class="card-container px-4 d-flex flex-column align-end" v-if="activeTeam">
+              <div class="card pa-3">
+                <div class="card-header mb-4 d-flex justify-start align-center">
+                  <div class="activity-name">開幕式</div>
+                </div>
+                <div class="time px-2 py-1">
+                  <span class="mr-2"><v-icon class="mr-1" color="#fff"
+                      size="20px">mdi-clock-time-four-outline</v-icon>時間</span>
+                  <span>13:00 - 13:30</span>
+                </div>
+              </div>
+              <div class="card pa-3">
+                <div class="card-header mb-4 d-flex justify-space-between align-center">
+                  <div class="activity-name">排球</div>
+                  <div class="btn-rule px-4" @click="popup = 1">查看規則</div>
+                </div>
+                <div class="time px-2 py-1 mb-2">
+                  <span class="mr-2"><v-icon class="mr-1" color="#fff"
+                      size="20px">mdi-clock-time-four-outline</v-icon>時間</span>
+                  <span>13:00 - 13:30</span>
+                </div>
+                <div class="opponent px-2 py-1">
+                  <v-icon class="mr-1" color="#fff" size="20px">mdi-sword-cross</v-icon>
+                  <span class="mr-2">對手</span>
+                  <span class="mr-1 icon_conutry"><img src="../assets/test.png" alt=""></span>
+                  <span>馬紹爾群島</span>
+                </div>
+              </div>
+              <div class="card pa-3">
+                <div class="card-header mb-4 d-flex justify-space-between align-center">
+                  <div class="activity-name">排球</div>
+                  <div class="btn-rule px-4">查看規則</div>
+                </div>
+                <div class="time px-2 py-1 mb-2">
+                  <span class="mr-2"><v-icon class="mr-1" color="#fff"
+                      size="20px">mdi-clock-time-four-outline</v-icon>時間</span>
+                  <span>13:00 - 13:30</span>
+                </div>
+                <div class="opponent px-2 py-1">
+                  <v-icon class="mr-1" color="#fff" size="20px">mdi-sword-cross</v-icon>
+                  <span class="mr-2">對手</span>
+                  <span class="mr-1 icon_conutry"><img src="../assets/test.png" alt=""></span>
+                  <span>馬紹爾群島</span>
+                </div>
+              </div>
+              <div class="card pa-3">
+                <div class="card-header mb-4 d-flex justify-start align-center">
+                  <div class="activity-name">閉幕式</div>
+                </div>
+                <div class="time px-2 py-1">
+                  <span class="mr-2"><v-icon class="mr-1" color="#fff"
+                      size="20px">mdi-clock-time-four-outline</v-icon>時間</span>
+                  <span>13:00 - 13:30</span>
+                </div>
+              </div>
+            </div>
+            <div class="default-content d-flex flex-column align-center" v-else key="default">
+              <img src="../assets/run_people.png" alt="">
+              <p>快來為你的國家隊加油</p>
+            </div>
+          </transition>
+        </div>
         <div class="team-container" :key="tab" v-if="tab == 'team'">
           <transition name="fade" mode="out-in">
             <div class="member-container" v-if="activeTeam">
@@ -92,8 +155,50 @@
           </transition>
         </div>
       </transition>
-
     </div>
+    <transition name="fade" mode="out-in">
+      <div class="popup" v-if="popup">
+        <div class="popup-container px-4">
+          <div class="popup-header pa-4 d-flex justify-space-between">
+            <span>排球規則</span>
+            <span><v-icon color="#343747">mdi-close</v-icon></span>
+          </div>
+          <div class="popup-content px-4 pb-4">
+            <div class="rule-title round d-flex justify-space-between align-center mb-3">
+              <div class="title-content">回合</div>
+              <div class="line"></div>
+            </div>
+            <ul class="rule-content mb-4">
+              <li>對抗制，共3回合</li>
+              <li>每回合6分鐘，若某隊得到8分則提前結束該回合</li>
+              <li>每回合每隊外場2人，內場6人</li>
+            </ul>
+            <div class="rule-title rule d-flex justify-space-between align-center mb-3">
+              <div class="title-content">規則</div>
+              <div class="line"></div>
+            </div>
+            <ul class="rule-content mb-4">
+              <li>對抗制，共3回合</li>
+              <li>每回合6分鐘，若某隊得到8分則提前結束該回合</li>
+              <li>每回合每隊外場2人，內場6人</li>
+            </ul>
+            <div class="rule-title point d-flex justify-space-between align-center mb-3">
+              <div class="title-content">計分</div>
+              <div class="line"></div>
+            </div>
+            <ul class="rule-content mb-4">
+              <li>對抗制，共3回合</li>
+              <li>每回合6分鐘，若某隊得到8分則提前結束該回合</li>
+              <li>每回合每隊外場2人，內場6人</li>
+            </ul>
+            <div class="popup-footer d-flex justify-center align-center">
+              <div class="btn-agree px-4">我了解哩</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </transition>
   </v-container>
 </template>
 
@@ -107,7 +212,8 @@ export default {
     tabTitle: '賽程表',
     panel: null,
     sheetData: 1,
-    activeTeam: 1
+    activeTeam: 1,
+    popup: 0,
   }),
   computed: {
     ...mapState(useMainStore, ['tab', 'tabLabel']),
@@ -196,7 +302,7 @@ export default {
   }
 
   .board-container {
-    margin-top: 48px;
+    margin-top: 26px;
 
     p {
       font-size: 14px;
@@ -220,6 +326,7 @@ export default {
       font-size: 16px;
       font-weight: 500;
       color: #fff;
+
       .leader {
         padding: 4px 8px;
         font-size: 16px;
@@ -244,6 +351,235 @@ export default {
         text-align: center;
         color: #fff;
         margin-top: 8px;
+      }
+    }
+  }
+
+  .timeline-container {
+    .card-container {
+      gap: 16px;
+      position: relative;
+
+      &::before {
+        position: absolute;
+        content: '';
+        display: block;
+        height: 100%;
+        width: 2px;
+        border-radius: 4px;
+        left: 0;
+        background-color: rgba(#fff, .5);
+        left: 27px;
+      }
+
+      .card {
+        width: calc(100% - 36px);
+        background-color: rgba(#fff, .2);
+        border-radius: 12px;
+        position: relative;
+
+        &::before {
+          content: '';
+          display: block;
+          position: absolute;
+          width: 24px;
+          height: 24px;
+          background-image: url(../assets/timepoint.png);
+          background-repeat: no-repeat;
+          background-size: cover;
+          left: -36px;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+
+        .card-header {
+          font-size: 16px;
+          color: #fff;
+          line-height: 24px;
+          width: 100%;
+
+          .btn-rule {
+            color: #D1D5E5;
+            font-family: Noto Sans CJK TC;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 28px;
+            text-align: center;
+            border: 1px solid #8C95BD;
+            border-radius: 8px;
+          }
+        }
+
+        .time {
+          display: inline-block;
+          background-color: rgba(#fff, .1);
+          font-family: Noto Sans CJK TC;
+          font-size: 14px;
+          font-weight: 500;
+          line-height: 21px;
+          text-align: left;
+          border-radius: 8px;
+          color: #fff;
+        }
+
+        .opponent {
+          display: block;
+          width: fit-content;
+          background-color: rgba(#fff, .1);
+          font-family: Noto Sans CJK TC;
+          font-size: 14px;
+          font-weight: 500;
+          line-height: 21px;
+          text-align: left;
+          border-radius: 8px;
+          color: #fff;
+
+          .icon_conutry {
+            position: relative;
+
+            img {
+              transform: translateY(3px);
+            }
+          }
+        }
+      }
+    }
+
+    .default-content {
+      margin-top: 26px;
+
+      p {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 24px;
+        text-align: center;
+        color: #fff;
+        margin-top: 8px;
+      }
+    }
+  }
+}
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  backdrop-filter: blur(4px);
+  background: #06000080;
+  z-index: 9999;
+
+  .popup-container {
+    position: absolute;
+    top: 0;
+    max-width: 600px;
+    width: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 16px;
+
+    .popup-header {
+      background-color: #fff;
+      border-radius: 16px 16px 0 0;
+      color: #343747;
+      font-size: 20px;
+      font-weight: 500;
+      height: 62px;
+      text-align: left;
+    }
+
+    .popup-content {
+      border-radius: 0 0 16px 16px;
+      background-color: #fff;
+      max-height: calc(100vh - 62px - 84px);
+      overflow-y: scroll;
+
+      .rule-title {
+        .title-content {
+          color: #fff;
+          font-size: 14px;
+          font-weight: 700;
+          line-height: 22px;
+          text-align: center;
+          padding: 2px 12px;
+          background-color: #000;
+          // width: fit-content;
+          border-radius: 24px;
+        }
+
+        .line {
+          width: calc(100% - 64px);
+          height: 1px;
+        }
+
+        &.round {
+
+          .title-content,
+          .line {
+            background-color: #0B87B9;
+          }
+        }
+
+        &.rule {
+
+          .title-content,
+          .line {
+            background-color: #06994E;
+          }
+
+        }
+
+        &.point {
+
+          .title-content,
+          .line {
+            background-color: #F1AC40;
+          }
+        }
+      }
+
+      .rule-content {
+
+        li {
+          font-size: 16px;
+          font-weight: 400;
+          line-height: 24px;
+          text-align: left;
+          position: relative;
+          list-style: none;
+
+          &::before {
+            content: '';
+            display: block;
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            background-color: #000;
+            top: 0;
+            left: -12px;
+            top: 11px;
+          }
+        }
+
+      }
+    }
+
+    .popup-footer {
+      height: 60px;
+      background-color: #fff;
+      border: 0 0 16px 16px;
+
+      .btn-agree {
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 36px;
+        letter-spacing: 1.25px;
+        text-align: center;
+        color: #1A2B7B;
+        border-radius: 36px;
+        border: 1px solid #1A2B7B;
       }
     }
   }

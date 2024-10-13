@@ -46,7 +46,7 @@ export default {
     max-width: 600px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 9999;
+    z-index: 1;
     .bot-navigation-container {
         background-color: #fff;
         height: 72px;
