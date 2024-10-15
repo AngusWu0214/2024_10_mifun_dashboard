@@ -14,7 +14,6 @@ import MainContent from './components/MainContent';
 import TopContent from './components/TopContent';
 import Footer from './components/Footer';
 import BottomNavigation from './components/BottomNavigation';
-
 export default {
   name: 'App',
 
@@ -28,20 +27,19 @@ export default {
   data: () => ({
     //
   }),
-  method: {
+  methods: {
     setCssVariable() {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
     },
     onResize() {
-      this.setCssVariable
-    }
+      this.setCssVariable();
+    },
   },
   created() {
-    // window.addEventListener('resize', this.onResize);
+    window.addEventListener('resize', this.onResize);
   },
   mounted() {
-
   }
 };
 </script>

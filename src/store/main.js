@@ -9,7 +9,8 @@ export const useMainStore = defineStore('Main', {
         isMobile: null,
         popup: null,
         popupQueue: null,
-        tab: 'timeline', //timeline,board,team
+        tab: 'team', //timeline,board,team
+        activeTeam: null
     }),
     getters: {
         formattedPhoneNumber: (state) => {
@@ -28,6 +29,53 @@ export const useMainStore = defineStore('Main', {
             };
             return tabMap[state.tab] || '未知頁面'; // 根據 tab 返回中文，若沒有匹配則返回 '未知頁面'
         },
+        activeTeamData: (state) => {
+            if(!state.activeTeam) return 0;
+            const teams = {
+              '巴拉圭': {
+                className: 'paraguay',
+                lgImage: require('../assets/A_lg.png'),
+                smImage: require('../assets/A_sm.png'),
+              },
+              '馬紹爾群島': {
+                className: 'marshall-islands',
+                lgImage: require('../assets/B_lg.png'),
+                smImage: require('../assets/B_sm.png'),
+              },
+              '史瓦帝尼': {
+                className: 'eswatini',
+                lgImage: require('../assets/C_lg.png'),
+                smImage: require('../assets/C_sm.png'),
+              },
+              '瓜地馬拉': {
+                className: 'guatemala',
+                lgImage: require('../assets/D_lg.png'),
+                smImage: require('../assets/D_sm.png'),
+              },
+              '聖克里斯多福及尼維斯聯邦': {
+                className: 'st-kitts-nevis',
+                lgImage: require('../assets/E_lg.png'),
+                smImage: require('../assets/E_sm.png'),
+              },
+              '吐瓦魯國': {
+                className: 'tuvalu',
+                lgImage: require('../assets/F_lg.png'),
+                smImage: require('../assets/F_sm.png'),
+              },
+              '聖文森及格瑞那丁': {
+                className: 'st-vincent-grenadines',
+                lgImage: require('../assets/G_lg.png'),
+                smImage: require('../assets/G_sm.png'),
+              },
+              '海地': {
+                className: 'haiti',
+                lgImage: require('../assets/H_lg.png'),
+                smImage: require('../assets/H_sm.png'),
+              }
+            };
+      
+            return teams[state.activeTeam];
+          }
     },
     actions: {
         resetState() {
@@ -51,5 +99,10 @@ export const useMainStore = defineStore('Main', {
                 state.tab = string;
             });
         },
+        setActiveTeam(string) {
+            this.$patch((state) => {
+                state.activeTeam = string;
+            });
+        }
     },
 })

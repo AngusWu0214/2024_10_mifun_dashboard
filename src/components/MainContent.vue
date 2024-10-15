@@ -7,9 +7,8 @@
         </div>
       </transition>
       <transition name="fade" mode="out-in">
-        <v-select v-if="tab !== 'board'" class="px-2" placeholder="請選擇國家隊" variant="underlined"
-          :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']" color="#fff" item-color="white"
-          dark v-model="activeTeam">
+        <v-select v-if="tab !== 'board'" class="px-2" placeholder="請選擇國家隊" variant="underlined" :items="teams"
+          color="#fff" dark @change="setActiveTeamHandler" item-color="#0000">
         </v-select>
       </transition>
       <transition name="fade" mode="out-in">
@@ -141,12 +140,15 @@
         </div>
         <div class="team-container" :key="tab" v-if="tab == 'team'">
           <transition name="fade" mode="out-in">
-            <div class="member-container" v-if="activeTeam">
-              <div class="leader">
-                隊長：Larry | 副隊長：Matthew
+            <div class="member-container" v-if="selectedTeam">
+              <div class="leader" :class="activeTeamData.className">
+                <img :src="activeTeamData.smImage" alt="" class="mr-1">
+                隊長：{{ selectedTeam.people[0] }} | 副隊長：{{ selectedTeam.people[1] }}
               </div>
               <div class="mb-4">國家隊員:</div>
-              <div>Abby / Abby</div>
+              <div class="team-member">
+                <span v-for="(person, index) in selectedTeam.people.slice(2)" :key="index"> {{ person }} /</span>
+              </div>
             </div>
             <div class="default-content d-flex flex-column align-center" v-else key="default">
               <img src="../assets/sit_people.png" alt="">
@@ -203,7 +205,7 @@
 </template>
 
 <script>
-import { mapState } from "pinia";
+import { mapActions, mapState } from "pinia";
 import { useMainStore } from "@/store/main";
 export default {
   name: 'MainContent',
@@ -212,20 +214,55 @@ export default {
     tabTitle: '賽程表',
     panel: null,
     sheetData: 1,
-    activeTeam: 1,
     popup: 0,
+    teamData: null,
+    teams: ["巴拉圭", "馬紹爾群島", "史瓦帝尼", "瓜地馬拉", "聖克里斯多福及尼維斯聯邦", "吐瓦魯國", "聖文森及格瑞那丁", "海地"]
   }),
   computed: {
-    ...mapState(useMainStore, ['tab', 'tabLabel']),
+    ...mapState(useMainStore, ['tab', 'tabLabel', 'activeTeam', 'activeTeamData']),
+    selectedTeam() {
+      if (!this.teamData) return 0
+      return this.teamData.find(team => team.country === this.activeTeam);
+    }
   },
   methods: {
+    ...mapActions(useMainStore, ['setActiveTeam']),
+    setActiveTeamHandler(value) {
+      this.setActiveTeam(value); // 呼叫 Pinia 的 action 設置 activeTeam
+    },
     test() {
       this.sheetData = null;
       console.log(this.panel)
-
+    },
+    transpose(array) {
+      return array[0].map((_, colIndex) => array.map(row => row[colIndex]));
+    },
+    fetchTeamData() {
+      const apiKey = "AIzaSyBIk_3y0P0gliDInh146C0oCP1Bp0Xn5KY";
+      const sheetId = "1wCI3m6UOnoViw_0sXajYelUpGzwVMkX6zK_mL5efmcA";
+      // Sheets 中要取得的資料範圍，格式如下
+      const range = "串接分組名單!A1:H20";
+      // Sheets API 的 URL
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          let sheetData = data.values;
+          const transposedData = this.transpose(sheetData);
+          const formattedData = transposedData.map(row => {
+            return {
+              country: row[0], // 第一列是國家
+              people: row.slice(1).filter(person => person) // 如果是空值，替換為空字符串 // 後面的列是人名
+            };
+          });
+          this.teamData = formattedData
+          console.log(formattedData);
+        })
+        .catch((error) => console.error("Error:", error));
     }
   },
   mounted() {
+    this.fetchTeamData();
   }
 }
 </script>
@@ -338,6 +375,50 @@ export default {
         border-radius: 8px;
         display: inline-block;
         margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        width: fit-content;
+
+        &.paraguay {
+          background-color: #fff;
+          color: #000;
+        }
+
+        &.marshall-islands {
+          background-color: #3E71D4;
+        }
+
+        &.eswatini {
+          background-color: #0E0E0E;
+        }
+
+        &.guatemala {
+          background-color: #57B2F3;
+        }
+
+        &.tuvalu {
+          background-color: #EF80A0;
+        }
+
+        &.st-kitts-nevis {
+          background-color: #1F714F;
+        }
+
+        &.st-vincent-grenadines {
+          background-color: #BEA388;
+        }
+
+        &.haiti {
+          background-color: #E34D5B;
+        }
+
+        img {
+          width: 16px;
+        }
+      }
+
+      .team-member {
+        word-break: break-all;
       }
     }
 
@@ -622,6 +703,10 @@ export default {
 
 .v-input__append-inner {
   padding-right: 12px !important;
+}
+
+.v-list-item--highlighted {
+  color: #000 !important;
 }
 
 .fade-enter-active,
