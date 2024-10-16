@@ -86,24 +86,25 @@
                   <span>13:00 - 13:30</span>
                 </div>
               </div>
-              <div class="card pa-3">
+              <div class="card pa-3" v-for="(event, index) in selectedTimeLine.matches" :key="index">
                 <div class="card-header mb-4 d-flex justify-space-between align-center">
-                  <div class="activity-name">排球</div>
-                  <div class="btn-rule px-4" @click="popup = 1">查看規則</div>
+                  <div class="activity-name">{{ event.event }}</div>
+                  <div class="btn-rule px-4" @click="showPopup(event.event)">查看規則</div>
                 </div>
                 <div class="time px-2 py-1 mb-2">
                   <span class="mr-2"><v-icon class="mr-1" color="#fff"
                       size="20px">mdi-clock-time-four-outline</v-icon>時間</span>
-                  <span>13:00 - 13:30</span>
+                  <span>{{ getEventTime(index) }}</span>
                 </div>
-                <div class="opponent px-2 py-1">
-                  <v-icon class="mr-1" color="#fff" size="20px">mdi-sword-cross</v-icon>
+                <div class="opponent px-2 py-1 d-flex" :class="getTeamColor(event.opponent).className">
+                  <v-icon class="mr-1" :color="event.opponent === '巴拉圭' ? '#000' : '#fff'"
+                    size="20px">mdi-sword-cross</v-icon>
                   <span class="mr-2">對手</span>
-                  <span class="mr-1 icon_conutry"><img src="../assets/test.png" alt=""></span>
-                  <span>馬紹爾群島</span>
+                  <span class="mr-1 icon_conutry"><img :src="getTeamColor(event.opponent).smImage" alt=""></span>
+                  <span>{{ event.opponent }}</span>
                 </div>
               </div>
-              <div class="card pa-3">
+              <!-- <div class="card pa-3">
                 <div class="card-header mb-4 d-flex justify-space-between align-center">
                   <div class="activity-name">排球</div>
                   <div class="btn-rule px-4">查看規則</div>
@@ -119,7 +120,7 @@
                   <span class="mr-1 icon_conutry"><img src="../assets/test.png" alt=""></span>
                   <span>馬紹爾群島</span>
                 </div>
-              </div>
+              </div> -->
               <div class="card pa-3">
                 <div class="card-header mb-4 d-flex justify-start align-center">
                   <div class="activity-name">閉幕式</div>
@@ -127,7 +128,7 @@
                 <div class="time px-2 py-1">
                   <span class="mr-2"><v-icon class="mr-1" color="#fff"
                       size="20px">mdi-clock-time-four-outline</v-icon>時間</span>
-                  <span>13:00 - 13:30</span>
+                  <span>17:20 - 17:40</span>
                 </div>
               </div>
             </div>
@@ -158,11 +159,11 @@
       </transition>
     </div>
     <transition name="fade" mode="out-in">
-      <div class="popup" v-if="popup">
-        <div class="popup-container px-4">
+      <div class="popup" v-if="popup" @click="closePopup">
+        <div class="popup-container px-4" @click.stop="">
           <div class="popup-header pa-4 d-flex justify-space-between">
-            <span>排球規則</span>
-            <span><v-icon color="#343747">mdi-close</v-icon></span>
+            <span>{{ activePopup.event }}規則</span>
+            <span @click="closePopup"><v-icon color="#343747">mdi-close</v-icon></span>
           </div>
           <div class="popup-content px-4 pb-4">
             <div class="rule-title round d-flex justify-space-between align-center mb-3">
@@ -170,27 +171,21 @@
               <div class="line"></div>
             </div>
             <ul class="rule-content mb-4">
-              <li>對抗制，共3回合</li>
-              <li>每回合6分鐘，若某隊得到8分則提前結束該回合</li>
-              <li>每回合每隊外場2人，內場6人</li>
+              <li v-for="(item, index) in activePopup.round" :key="index">{{ item }}</li>
             </ul>
             <div class="rule-title rule d-flex justify-space-between align-center mb-3">
               <div class="title-content">規則</div>
               <div class="line"></div>
             </div>
             <ul class="rule-content mb-4">
-              <li>對抗制，共3回合</li>
-              <li>每回合6分鐘，若某隊得到8分則提前結束該回合</li>
-              <li>每回合每隊外場2人，內場6人</li>
+              <li v-for="(item, index) in activePopup.rule" :key="index">{{ item }}</li>
             </ul>
             <div class="rule-title point d-flex justify-space-between align-center mb-3">
               <div class="title-content">計分</div>
               <div class="line"></div>
             </div>
             <ul class="rule-content mb-4">
-              <li>對抗制，共3回合</li>
-              <li>每回合6分鐘，若某隊得到8分則提前結束該回合</li>
-              <li>每回合每隊外場2人，內場6人</li>
+              <li v-for="(item, index) in activePopup.score" :key="index">{{ item }}</li>
             </ul>
             <div class="popup-footer d-flex justify-center align-center">
               <div class="btn-agree px-4">我了解哩</div>
@@ -218,12 +213,51 @@ export default {
     teams: ["巴拉圭", "馬紹爾群島", "史瓦帝尼", "瓜地馬拉", "聖克里斯多福及尼維斯聯邦", "吐瓦魯國", "聖文森及格瑞那丁", "海地"],
     userTeam: null,
     boardData: null,
+    timeLineData: null,
+    activePopup: null,
+    popupData: [
+      {
+        event: '排球',
+        round: ['對抗制，共2回合', '每回合10分鐘，若某隊得到12分則提前結束該回合', '每回合每隊6人上場'],
+        rule: ['一切按照排球規則（計分除外）', '兩回合不可派重複的人上場', '每回合開始前，各隊有各發一次球的試玩機會'],
+        score: ['採累計制，但每回合最高得分為12分']
+      },
+      {
+        event: '跳繩',
+        round: ['輪流進行，每隊3回合，共6回合', '每回合3分鐘', '每回合每隊分別為3、4、5人上場，外加2名甩繩員'],
+        rule: ['兩隊各派一人猜拳，贏的可以選要先或後', '由各隊自行推派選手', '比賽進行間可換人上場，但損失的時間不會補給', '倒數30秒和時間結束時，裁判會提示'],
+        score: ['3人回合，連續跳2下，得1分', '4人回合，連續跳2下，得2分', '5人回合，連續跳2下，得3分', '此項目天花板就是最高25分', '若時間結束，哨聲響起，選手仍繼續跳則不列入計分']
+      },
+      {
+        event: '擊劍',
+        round: ['對抗制，男單、女單、男雙、女雙各2回合，共8回合', '每回合40秒'],
+        rule: ['由隊內討論選出各回合參賽的劍士', '所有劍士手持泡棉棒，身穿魔鬼氈背心，背心或背帶上附有可被擊落的球', '劍士的目標是用泡棉棒擊落對方身上的球', '依實際男女出席狀況，評審將有權即時賽制調整'],
+        score: ['該回合擊落最多球者，單人賽得 2 分，雙人賽得 3 分', '若平手，則各得 1 分', '全部比賽結束後，贏最多局的隊伍再加 5 分']
+      },
+      {
+        event: '躲避球',
+        round: ['對抗制，共3回合', '每回合6分鐘，若某隊得到8分則提前結束該回合', '每回合每隊外場2人，內場6人'],
+        rule: ['開場球權爭奪：球置於場中央，雙方球員從後方紅線起跑衝搶球', '奪球後，須先回場踩到紅線，才能發動攻擊', '內場球員若被擊中，視為出局並前往外場', '外場球員擊中敵方內場球員，則復活並進入內場', '場內若僅剩一位球員，該球員被擊中不會出局', '出界為從寬認定，球員踩線不算出界', '男性需雙手擲球，女性不限', '裁判暫停響哨後，擲出的球無效'],
+        score: ['採累計制，擊中對手內場得1分', '每回合最高分為8分', '若回合結束，雙方皆未奪下8分，人多的一方+1分', '若回合結束，雙方人數相同時，各+1分', '此項目天花板為總和24分']
+      },
+      {
+        event: '拔河',
+        round: ['每場比賽有3 回合，採3戰2勝制', '每回合1分鐘', '每回合由兩隊進行，參賽人數以當天出席人數最少的隊伍為基準(視情況扣除因傷缺席的人員)'],
+        rule: ['八強賽4場，四強賽2場，冠軍賽1場，全員共有7場比賽', '比賽場地上有中心線標註', '繩子中間處有紅色標記，左右4公尺處各有一個白色標記，左右5公尺處各有一個藍色標記', '雙方從藍色標記開始交錯站位，最後一位握繩其子必須從身體前方沿著至背部，再斜上對側肩上，多餘的繩子應經由腋下向後；不可將纏繞身體'],
+        win: ['比賽時白色標記被拉至場地中心線', '1分鐘結束後，以紅色線條偏向的隊伍方作為勝者'],
+        score: ['拔河冠軍獲得25分', '拔河亞軍獲得20分', '拔河季軍、殿軍獲得15分', '拔河五～八強獲得10分']
+      }
+    ]
   }),
   computed: {
     ...mapState(useMainStore, ['tab', 'tabLabel', 'activeTeam', 'activeTeamData']),
     selectedTeam() {
       if (!this.teamData) return 0
       return this.teamData.find(team => team.country === this.activeTeam);
+    },
+    selectedTimeLine() {
+      if (!this.timeLineData) return 0
+      return this.timeLineData.find(team => team.country === this.activeTeam);
     }
   },
   methods: {
@@ -234,6 +268,18 @@ export default {
     test() {
       this.sheetData = null;
       console.log(this.panel)
+    },
+    showPopup(eventName) {
+      const popupContent = this.popupData.find(item => item.event === eventName);
+      if (popupContent) {
+        this.activePopup = popupContent;
+        this.popup = true;  // 控制顯示彈窗
+      }
+    },
+
+    closePopup() {
+      this.popup = false;  // 關閉彈窗
+      this.activePopup = null;
     },
     transpose(array) {
       return array[0].map((_, colIndex) => array.map(row => row[colIndex]));
@@ -303,6 +349,54 @@ export default {
         })
         .catch((error) => console.error("Error:", error));
     },
+    fetchTimeLineData() {
+      const apiKey = "AIzaSyBIk_3y0P0gliDInh146C0oCP1Bp0Xn5KY";
+      const sheetId = "1wCI3m6UOnoViw_0sXajYelUpGzwVMkX6zK_mL5efmcA";
+      const self = this;
+      // Sheets 中要取得的資料範圍，格式如下
+      const range = "串接賽程表!A1:H11";
+      // Sheets API 的 URL
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          const sheetData = data.values;
+
+          const formattedData = sheetData[0].map((team, index) => {
+            return {
+              country: team, // 各隊名稱
+              matches: [
+                {
+                  opponent: sheetData[1][index], // 第一個對手
+                  event: sheetData[6][index], // 第一場比賽的項目
+                },
+                {
+                  opponent: sheetData[2][index], // 第二個對手
+                  event: sheetData[7][index], // 第二場比賽的項目
+                },
+                {
+                  opponent: sheetData[3][index], // 第三個對手
+                  event: sheetData[8][index], // 第三場比賽的項目
+                },
+                {
+                  opponent: sheetData[4][index], // 第四個對手
+                  event: sheetData[9][index], // 第四場比賽的項目
+                },
+                {
+                  opponent: sheetData[5][index], // 第五個對手
+                  event: sheetData[10][index], // 第五場比賽的項目
+                }
+              ]
+            };
+          });
+
+          // 將處理後的賽程資料存入變數
+          self.timeLineData = formattedData;
+
+          console.log(self.timelineData); // 可以檢查格式化後的賽程資料
+        })
+        .catch((error) => console.error("Error:", error));
+    },
     getCountryImagePath(country) {
       // 創建一個對應的國家代碼與名稱的映射
       const countryMap = {
@@ -325,11 +419,68 @@ export default {
       } else {
         return ''; // 如果沒有找到對應的國家，返回空字串或一個預設圖片
       }
-    }
+    },
+    getEventTime(index) {
+      const eventTimes = [
+        "13:35 - 14:15",
+        "14:20 - 15:00",
+        "15:05 - 15:45",
+        "15:50 - 16:30",
+        "16:45 - 17:15"
+      ];
+      return eventTimes[index] || "時間待定"; // 如果 index 超過範圍，顯示 "時間待定"
+    },
+    getTeamColor(team) {
+      const teams = {
+        '巴拉圭': {
+          className: 'paraguay',
+          lgImage: require('../assets/A_lg.png'),
+          smImage: require('../assets/A_sm.png'),
+        },
+        '馬紹爾群島': {
+          className: 'marshall-islands',
+          lgImage: require('../assets/B_lg.png'),
+          smImage: require('../assets/B_sm.png'),
+        },
+        '史瓦帝尼': {
+          className: 'eswatini',
+          lgImage: require('../assets/C_lg.png'),
+          smImage: require('../assets/C_sm.png'),
+        },
+        '瓜地馬拉': {
+          className: 'guatemala',
+          lgImage: require('../assets/D_lg.png'),
+          smImage: require('../assets/D_sm.png'),
+        },
+        '聖克里斯多福及尼維斯聯邦': {
+          className: 'st-kitts-nevis',
+          lgImage: require('../assets/E_lg.png'),
+          smImage: require('../assets/E_sm.png'),
+        },
+        '吐瓦魯國': {
+          className: 'tuvalu',
+          lgImage: require('../assets/F_lg.png'),
+          smImage: require('../assets/F_sm.png'),
+        },
+        '聖文森及格瑞那丁': {
+          className: 'st-vincent-grenadines',
+          lgImage: require('../assets/G_lg.png'),
+          smImage: require('../assets/G_sm.png'),
+        },
+        '海地': {
+          className: 'haiti',
+          lgImage: require('../assets/H_lg.png'),
+          smImage: require('../assets/H_sm.png'),
+        }
+      };
+
+      return teams[team];
+    },
   },
   mounted() {
     this.fetchTeamData();
     this.fetchBoardData();
+    this.fetchTimeLineData();
   }
 }
 </script>
@@ -362,12 +513,15 @@ export default {
         text-align: center;
         margin-right: 16px;
       }
-      .flag{
+
+      .flag {
         width: 18px;
-        img{
+
+        img {
           width: 100%;
         }
       }
+
       .country-name {
         font-size: 14px;
         font-weight: 500;
@@ -588,6 +742,39 @@ export default {
           text-align: left;
           border-radius: 8px;
           color: #fff;
+
+          &.paraguay {
+            background-color: #fff;
+            color: #000;
+          }
+
+          &.marshall-islands {
+            background-color: #3E71D4;
+          }
+
+          &.eswatini {
+            background-color: #0E0E0E;
+          }
+
+          &.guatemala {
+            background-color: #57B2F3;
+          }
+
+          &.tuvalu {
+            background-color: #EF80A0;
+          }
+
+          &.st-kitts-nevis {
+            background-color: #1F714F;
+          }
+
+          &.st-vincent-grenadines {
+            background-color: #BEA388;
+          }
+
+          &.haiti {
+            background-color: #E34D5B;
+          }
 
           .icon_conutry {
             position: relative;
