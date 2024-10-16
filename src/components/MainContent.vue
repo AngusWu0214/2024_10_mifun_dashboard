@@ -8,58 +8,57 @@
       </transition>
       <transition name="fade" mode="out-in">
         <v-select v-if="tab !== 'board'" class="px-2" placeholder="請選擇國家隊" variant="underlined" :items="teams"
-          color="#fff" dark @change="setActiveTeamHandler" item-color="#0000">
+          color="#fff" dark @change="setActiveTeamHandler" item-color="#0000" v-model="userTeam">
         </v-select>
       </transition>
       <transition name="fade" mode="out-in">
         <div class="board-container" :key="tab" v-if="tab == 'board'">
           <transition name="fade" mode="out-in">
-            <div class="panel-container" v-if="sheetData" key="panel">
+            <div class="panel-container" v-if="boardData" key="panel">
               <v-expansion-panels v-model="panel" accordion>
-                <v-expansion-panel class="mb-1">
+                <v-expansion-panel class="mb-1" v-for="(team, index) in boardData" :key="index">
                   <v-expansion-panel-header>
                     <div class="header-item d-flex justify-space-between align-center">
                       <div class="left-content d-flex justify-space-between align-center">
                         <div class="num-icon">
-                          <img src="../assets/icom_num_0.png" alt="">
+                          <img v-if="team.rank <= 3" src="../assets/icon_num_0.png" alt="">
+                          <div v-else>{{ team.rank }}</div>
                         </div>
                         <div class="country d-flex align-center">
                           <div class="flag">
-                            <img src="../assets/country_A.png" alt="">
+                            <img :src="getCountryImagePath(team.country)" alt="">
                           </div>
                           <div class="country-name ml-1">
-                            馬紹爾群島
+                            {{ team.country }}
                           </div>
                         </div>
                       </div>
-                      <div class="total-score">125</div>
+                      <div class="total-score">{{ team.totalScore }}</div>
                     </div>
                   </v-expansion-panel-header>
                   <v-expansion-panel-content>
                     <div class="fraction-list">
                       <div class="fraction-item d-flex justify-space-between">
-                        <div class="activity-name">排球</div>
-                        <div class="score">20</div>
+                        <div class="activity-name">躲避球</div>
+                        <div class="score">{{ team.dodgeballScore }}</div>
+                      </div>
+                      <div class="fraction-item d-flex justify-space-between">
+                        <div class="activity-name">擊劍</div>
+                        <div class="score">{{ team.fencingScore }}</div>
                       </div>
                       <div class="fraction-item d-flex justify-space-between">
                         <div class="activity-name">排球</div>
-                        <div class="score">-</div>
+                        <div class="score">{{ team.volleyballScore }}</div>
+                      </div>
+                      <div class="fraction-item d-flex justify-space-between">
+                        <div class="activity-name">跳繩</div>
+                        <div class="score">{{ team.jumpropeScore }}</div>
+                      </div>
+                      <div class="fraction-item d-flex justify-space-between">
+                        <div class="activity-name">拔河</div>
+                        <div class="score">{{ team.tugofwarScore }}</div>
                       </div>
                     </div>
-                  </v-expansion-panel-content>
-                </v-expansion-panel>
-
-                <v-expansion-panel>
-                  <v-expansion-panel-header>Panel 2</v-expansion-panel-header>
-                  <v-expansion-panel-content>
-                    Some content
-                  </v-expansion-panel-content>
-                </v-expansion-panel>
-
-                <v-expansion-panel>
-                  <v-expansion-panel-header>Panel 3</v-expansion-panel-header>
-                  <v-expansion-panel-content>
-                    Some content
                   </v-expansion-panel-content>
                 </v-expansion-panel>
               </v-expansion-panels>
@@ -216,7 +215,9 @@ export default {
     sheetData: 1,
     popup: 0,
     teamData: null,
-    teams: ["巴拉圭", "馬紹爾群島", "史瓦帝尼", "瓜地馬拉", "聖克里斯多福及尼維斯聯邦", "吐瓦魯國", "聖文森及格瑞那丁", "海地"]
+    teams: ["巴拉圭", "馬紹爾群島", "史瓦帝尼", "瓜地馬拉", "聖克里斯多福及尼維斯聯邦", "吐瓦魯國", "聖文森及格瑞那丁", "海地"],
+    userTeam: null,
+    boardData: null,
   }),
   computed: {
     ...mapState(useMainStore, ['tab', 'tabLabel', 'activeTeam', 'activeTeamData']),
@@ -259,10 +260,76 @@ export default {
           console.log(formattedData);
         })
         .catch((error) => console.error("Error:", error));
+    },
+    fetchBoardData() {
+      const apiKey = "AIzaSyBIk_3y0P0gliDInh146C0oCP1Bp0Xn5KY";
+      const sheetId = "1wCI3m6UOnoViw_0sXajYelUpGzwVMkX6zK_mL5efmcA";
+      // Sheets 中要取得的資料範圍，格式如下
+      const range = "串接分數!A1:H6";
+      // Sheets API 的 URL
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          const sheetData = data.values;
+          const transposedData = this.transpose(sheetData);
+          const formattedData = transposedData.map(row => {
+            const dodgeballScore = parseInt(row[1]) || 0;
+            const fencingScore = parseInt(row[2]) || 0;
+            const volleyballScore = parseInt(row[3]) || 0;
+            const jumpropeScore = parseInt(row[4]) || 0;
+            const tugofwarScore = parseInt(row[5]) || 0;
+            const totalScore = dodgeballScore + fencingScore + volleyballScore + jumpropeScore + tugofwarScore;
+            return {
+              country: row[0], // 第一個值是國家
+              dodgeballScore,  // 第二個值是躲避球分數
+              fencingScore,    // 第三個值是擊劍分數
+              volleyballScore, // 第四個值是排球分數
+              jumpropeScore,   // 第五個值是跳繩分數
+              tugofwarScore,   // 第六個值是拔河分數
+              totalScore       // 新增的總分欄位
+            };
+          });
+          formattedData.sort((a, b) => b.totalScore - a.totalScore);
+          let rank = 1;
+          formattedData.forEach((team, index) => {
+            if (index > 0 && team.totalScore < formattedData[index - 1].totalScore) {
+              rank = index + 1;
+            }
+            team.rank = rank; // 新增名次欄位
+          });
+          this.boardData = formattedData;
+          console.log(formattedData);
+        })
+        .catch((error) => console.error("Error:", error));
+    },
+    getCountryImagePath(country) {
+      // 創建一個對應的國家代碼與名稱的映射
+      const countryMap = {
+        "巴拉圭": "A",
+        "馬紹爾群島": "B",
+        "史瓦帝尼": "C",
+        "瓜地馬拉": "D",
+        "聖克里斯多福及尼維斯聯邦": "E",
+        "吐瓦魯國": "F",
+        "聖文森及格瑞那丁": "G",
+        "海地": "H"
+      };
+
+      // 根據國家名稱獲取對應的代碼
+      const countryCode = countryMap[country];
+
+      // 返回對應的圖片路徑
+      if (countryCode) {
+        return require(`../assets/${countryCode}_3x.png`);
+      } else {
+        return ''; // 如果沒有找到對應的國家，返回空字串或一個預設圖片
+      }
     }
   },
   mounted() {
     this.fetchTeamData();
+    this.fetchBoardData();
   }
 }
 </script>
@@ -291,9 +358,16 @@ export default {
       padding-right: 16px;
 
       .num-icon {
+        width: 24px;
+        text-align: center;
         margin-right: 16px;
       }
-
+      .flag{
+        width: 18px;
+        img{
+          width: 100%;
+        }
+      }
       .country-name {
         font-size: 14px;
         font-weight: 500;
