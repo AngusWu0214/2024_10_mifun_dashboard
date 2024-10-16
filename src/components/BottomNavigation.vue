@@ -6,7 +6,7 @@
                 <div class="nav-text">賽程表</div>
             </div>
             <div class="bot-nav-item d-flex flex-column align-center" :class="{ active: tab == 'board' }" @click="setTab('board')">
-                <v-icon :color="tab === 'board' ? '#1A2B7B' : '#8C95BD'">mdi-domain</v-icon>
+                <v-icon :color="tab === 'board' ? '#1A2B7B' : '#8C95BD'">mdi-scoreboard-outline</v-icon>
                 <div class="nav-text">計分板</div>
             </div>
             <div class="bot-nav-item d-flex flex-column align-center" :class="{ active: tab == 'team' }" @click="setTab('team')">
