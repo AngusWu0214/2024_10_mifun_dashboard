@@ -195,6 +195,7 @@
         </div>
       </div>
     </transition>
+    <div class="btn-reset" @click="resetData" v-if="tab !== 'team'"></div>
   </v-container>
 </template>
 
@@ -261,9 +262,24 @@ export default {
     }
   },
   methods: {
-    ...mapActions(useMainStore, ['setActiveTeam']),
+    ...mapActions(useMainStore, ['setActiveTeam', 'setLoading']),
     setActiveTeamHandler(value) {
       this.setActiveTeam(value); // 呼叫 Pinia 的 action 設置 activeTeam
+    },
+    async resetData() {
+      this.setLoading(true);
+
+      try {
+        // 依次執行數據獲取，使用 await 確保每個操作完成後才執行下一個
+        await this.fetchBoardData();
+        await this.fetchTimeLineData();
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        alert("資料加載失敗，請稍後再試");
+      } finally {
+        // 所有數據加載完畢，關閉 loading
+        this.setLoading(false);
+      }
     },
     test() {
       this.sheetData = null;
@@ -284,118 +300,103 @@ export default {
     transpose(array) {
       return array[0].map((_, colIndex) => array.map(row => row[colIndex]));
     },
-    fetchTeamData() {
+    async fetchAllData() {
+      // 開始加載，設置 loading 狀態
+      this.setLoading(true);
+
+      try {
+        // 依次執行數據獲取，使用 await 確保每個操作完成後才執行下一個
+        await this.fetchTeamData();
+        await this.fetchBoardData();
+        await this.fetchTimeLineData();
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        alert("資料加載失敗，請稍後再試");
+      } finally {
+        // 所有數據加載完畢，關閉 loading
+        this.setLoading(false);
+      }
+    },
+    async fetchTeamData() {
       const apiKey = "AIzaSyBIk_3y0P0gliDInh146C0oCP1Bp0Xn5KY";
       const sheetId = "1wCI3m6UOnoViw_0sXajYelUpGzwVMkX6zK_mL5efmcA";
-      // Sheets 中要取得的資料範圍，格式如下
       const range = "串接分組名單!A1:H20";
-      // Sheets API 的 URL
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
-      fetch(url)
-        .then((response) => response.json())
-        .then((data) => {
-          let sheetData = data.values;
-          const transposedData = this.transpose(sheetData);
-          const formattedData = transposedData.map(row => {
-            return {
-              country: row[0], // 第一列是國家
-              people: row.slice(1).filter(person => person) // 如果是空值，替換為空字符串 // 後面的列是人名
-            };
-          });
-          this.teamData = formattedData
-          console.log(formattedData);
-        })
-        .catch((error) => console.error("Error:", error));
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        let sheetData = data.values;
+        const transposedData = this.transpose(sheetData);
+        const formattedData = transposedData.map(row => ({
+          country: row[0],
+          people: row.slice(1).filter(person => person)
+        }));
+        this.teamData = formattedData;
+      } catch (error) {
+        console.error("Error fetching team data:", error);
+        throw error;
+      }
     },
-    fetchBoardData() {
+    async fetchBoardData() {
       const apiKey = "AIzaSyBIk_3y0P0gliDInh146C0oCP1Bp0Xn5KY";
       const sheetId = "1wCI3m6UOnoViw_0sXajYelUpGzwVMkX6zK_mL5efmcA";
-      // Sheets 中要取得的資料範圍，格式如下
       const range = "串接分數!A1:H6";
-      // Sheets API 的 URL
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
-      fetch(url)
-        .then((response) => response.json())
-        .then((data) => {
-          const sheetData = data.values;
-          const transposedData = this.transpose(sheetData);
-          const formattedData = transposedData.map(row => {
-            const dodgeballScore = parseInt(row[1]) || 0;
-            const fencingScore = parseInt(row[2]) || 0;
-            const volleyballScore = parseInt(row[3]) || 0;
-            const jumpropeScore = parseInt(row[4]) || 0;
-            const tugofwarScore = parseInt(row[5]) || 0;
-            const totalScore = dodgeballScore + fencingScore + volleyballScore + jumpropeScore + tugofwarScore;
-            return {
-              country: row[0], // 第一個值是國家
-              dodgeballScore,  // 第二個值是躲避球分數
-              fencingScore,    // 第三個值是擊劍分數
-              volleyballScore, // 第四個值是排球分數
-              jumpropeScore,   // 第五個值是跳繩分數
-              tugofwarScore,   // 第六個值是拔河分數
-              totalScore       // 新增的總分欄位
-            };
-          });
-          formattedData.sort((a, b) => b.totalScore - a.totalScore);
-          let rank = 1;
-          formattedData.forEach((team, index) => {
-            if (index > 0 && team.totalScore < formattedData[index - 1].totalScore) {
-              rank = index + 1;
-            }
-            team.rank = rank; // 新增名次欄位
-          });
-          this.boardData = formattedData;
-          console.log(formattedData);
-        })
-        .catch((error) => console.error("Error:", error));
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        let sheetData = data.values;
+        const transposedData = this.transpose(sheetData);
+        const formattedData = transposedData.map(row => ({
+          country: row[0],
+          dodgeballScore: parseInt(row[1]) || 0,
+          fencingScore: parseInt(row[2]) || 0,
+          volleyballScore: parseInt(row[3]) || 0,
+          jumpropeScore: parseInt(row[4]) || 0,
+          tugofwarScore: parseInt(row[5]) || 0,
+          totalScore: parseInt(row[1]) + parseInt(row[2]) + parseInt(row[3]) + parseInt(row[4]) + parseInt(row[5])
+        }));
+        formattedData.sort((a, b) => b.totalScore - a.totalScore);
+        let rank = 1;
+        formattedData.forEach((team, index) => {
+          if (index > 0 && team.totalScore < formattedData[index - 1].totalScore) {
+            rank = index + 1;
+          }
+          team.rank = rank; // 新增名次欄位
+        });
+        this.boardData = formattedData;
+      } catch (error) {
+        console.error("Error fetching board data:", error);
+        throw error;
+      }
     },
-    fetchTimeLineData() {
+    async fetchTimeLineData() {
       const apiKey = "AIzaSyBIk_3y0P0gliDInh146C0oCP1Bp0Xn5KY";
       const sheetId = "1wCI3m6UOnoViw_0sXajYelUpGzwVMkX6zK_mL5efmcA";
-      const self = this;
-      // Sheets 中要取得的資料範圍，格式如下
       const range = "串接賽程表!A1:H11";
-      // Sheets API 的 URL
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
-      fetch(url)
-        .then((response) => response.json())
-        .then((data) => {
-          const sheetData = data.values;
 
-          const formattedData = sheetData[0].map((team, index) => {
-            return {
-              country: team, // 各隊名稱
-              matches: [
-                {
-                  opponent: sheetData[1][index], // 第一個對手
-                  event: sheetData[6][index], // 第一場比賽的項目
-                },
-                {
-                  opponent: sheetData[2][index], // 第二個對手
-                  event: sheetData[7][index], // 第二場比賽的項目
-                },
-                {
-                  opponent: sheetData[3][index], // 第三個對手
-                  event: sheetData[8][index], // 第三場比賽的項目
-                },
-                {
-                  opponent: sheetData[4][index], // 第四個對手
-                  event: sheetData[9][index], // 第四場比賽的項目
-                },
-                {
-                  opponent: sheetData[5][index], // 第五個對手
-                  event: sheetData[10][index], // 第五場比賽的項目
-                }
-              ]
-            };
-          });
-
-          // 將處理後的賽程資料存入變數
-          self.timeLineData = formattedData;
-
-          console.log(self.timelineData); // 可以檢查格式化後的賽程資料
-        })
-        .catch((error) => console.error("Error:", error));
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        let sheetData = data.values;
+        const formattedData = sheetData[0].map((team, index) => ({
+          country: team,
+          matches: [
+            { opponent: sheetData[1][index], event: sheetData[6][index] },
+            { opponent: sheetData[2][index], event: sheetData[7][index] },
+            { opponent: sheetData[3][index], event: sheetData[8][index] },
+            { opponent: sheetData[4][index], event: sheetData[9][index] },
+            { opponent: sheetData[5][index], event: sheetData[10][index] }
+          ]
+        }));
+        this.timeLineData = formattedData;
+      } catch (error) {
+        console.error("Error fetching timeline data:", error);
+        throw error;
+      }
     },
     getCountryImagePath(country) {
       // 創建一個對應的國家代碼與名稱的映射
@@ -478,9 +479,7 @@ export default {
     },
   },
   mounted() {
-    this.fetchTeamData();
-    this.fetchBoardData();
-    this.fetchTimeLineData();
+    this.fetchAllData();
   }
 }
 </script>
@@ -924,6 +923,26 @@ export default {
         border: 1px solid #1A2B7B;
       }
     }
+  }
+}
+
+.btn-reset {
+  width: 52px;
+  height: 52px;
+  background-image: url(../assets/btn_reset.png);
+  background-size: cover;
+  background-repeat: no-repeat;
+  position: fixed;
+  z-index: 5;
+  bottom: 104px;
+  right: 12px;
+
+  // transform: translateX(150px);
+  @media (min-width: 600px) {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    margin-left: 270px;
   }
 }
 
