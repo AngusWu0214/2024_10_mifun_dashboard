@@ -15,12 +15,23 @@
         <div class="board-container" :key="tab" v-if="tab == 'board'">
           <transition name="fade" mode="out-in">
             <div class="panel-container" v-if="boardData" key="panel">
+              <div class="title-list d-flex justify-space-between mb-2">
+                <div class="d-flex">
+                  <div class="mr-4">排名</div>
+                  <div>隊名</div>
+                </div>
+                <div>目前積分</div>
+              </div>
               <v-expansion-panels v-model="panel" accordion>
                 <v-expansion-panel class="mb-1" v-for="(team, index) in boardData" :key="index">
                   <v-expansion-panel-header>
                     <div class="header-item d-flex justify-space-between align-center">
                       <div class="left-content d-flex justify-space-between align-center">
-                        <div class="num-icon">
+                        <div class="num-icon" v-if="allTugOfWarCompleted">
+                          <img v-if="team.rank <= 3" :src="require(`../assets/icon_num_${team.rank}.png`)" alt="">
+                          <div v-else>{{ team.rank }}</div>
+                        </div>
+                        <div class="num-icon" v-else>
                           <img v-if="team.rank <= 3" src="../assets/icon_num_0.png" alt="">
                           <div v-else>{{ team.rank }}</div>
                         </div>
@@ -40,23 +51,28 @@
                     <div class="fraction-list">
                       <div class="fraction-item d-flex justify-space-between">
                         <div class="activity-name">躲避球</div>
-                        <div class="score">{{ team.dodgeballScore }}</div>
+                        <div class="score" v-if="team.dodgeballStatus === '比賽結束'">{{ team.dodgeballScore }}</div>
+                        <div class="score" v-else>-</div>
                       </div>
                       <div class="fraction-item d-flex justify-space-between">
                         <div class="activity-name">擊劍</div>
-                        <div class="score">{{ team.fencingScore }}</div>
+                        <div class="score" v-if="team.fencingStatus === '比賽結束'">{{ team.fencingScore }}</div>
+                        <div class="score" v-else>-</div>
                       </div>
                       <div class="fraction-item d-flex justify-space-between">
                         <div class="activity-name">排球</div>
-                        <div class="score">{{ team.volleyballScore }}</div>
+                        <div class="score" v-if="team.volleyballStatus === '比賽結束'">{{ team.volleyballScore }}</div>
+                        <div class="score" v-else>-</div>
                       </div>
                       <div class="fraction-item d-flex justify-space-between">
                         <div class="activity-name">跳繩</div>
-                        <div class="score">{{ team.jumpropeScore }}</div>
+                        <div class="score" v-if="team.jumpropeStatus === '比賽結束'">{{ team.jumpropeScore }}</div>
+                        <div class="score" v-else>-</div>
                       </div>
                       <div class="fraction-item d-flex justify-space-between">
                         <div class="activity-name">拔河</div>
-                        <div class="score">{{ team.tugofwarScore }}</div>
+                        <div class="score" v-if="team.tugofwarStatus === '比賽結束'">{{ team.tugofwarScore }}</div>
+                        <div class="score" v-else>-</div>
                       </div>
                     </div>
                   </v-expansion-panel-content>
@@ -73,10 +89,16 @@
           </transition>
 
         </div>
-        <div class="timeline-container" :key="tab" v-if="tab == 'timeline'">
+        <div class="timeline-container px-2" :key="tab" v-if="tab == 'timeline'">
+          <transition name="fade" mode="out-in">
+            <div class="btn-hideend px-4 mb-4 mt-4" v-if="activeTeam" @click="isHideEnd = !isHideEnd">{{ isHideEnd ?
+              '顯示已結束的活動' : '隱藏已結束的活動' }}</div>
+          </transition>
+
           <transition name="fade" mode="out-in">
             <div class="card-container px-4 d-flex flex-column align-end" v-if="activeTeam">
-              <div class="card pa-3">
+              <div class="card pa-3" :class="{ disabled: selectedTimeLine.matches[0].status === '比賽結束' }"
+                v-if="!isHideEnd || selectedTimeLine.length < 5">
                 <div class="card-header mb-4 d-flex justify-start align-center">
                   <div class="activity-name">開幕式</div>
                 </div>
@@ -86,7 +108,8 @@
                   <span>13:00 - 13:30</span>
                 </div>
               </div>
-              <div class="card pa-3" v-for="(event, index) in selectedTimeLine.matches" :key="index">
+              <div class="card pa-3" v-for="(event, index) in selectedTimeLine.matches" :key="index"
+                :class="{ disabled: event.status === '比賽結束' }">
                 <div class="card-header mb-4 d-flex justify-space-between align-center">
                   <div class="activity-name">{{ event.event }}</div>
                   <div class="btn-rule px-4" @click="showPopup(event.event)">查看規則</div>
@@ -188,7 +211,7 @@
               <li v-for="(item, index) in activePopup.score" :key="index">{{ item }}</li>
             </ul>
             <div class="popup-footer d-flex justify-center align-center">
-              <div class="btn-agree px-4">我了解哩</div>
+              <div class="btn-agree px-4" @click="closePopup">我了解哩</div>
             </div>
           </div>
 
@@ -211,7 +234,7 @@ export default {
     sheetData: 1,
     popup: 0,
     teamData: null,
-    teams: ["巴拉圭", "馬紹爾群島", "史瓦帝尼", "瓜地馬拉", "聖克里斯多福及尼維斯聯邦", "吐瓦魯國", "聖文森及格瑞那丁", "海地"],
+    teams: ["巴拉圭", "馬紹爾群島", "史瓦帝尼", "瓜地馬拉", "聖克里斯多福及尼維斯聯邦", "吐瓦魯", "聖文森及格瑞那丁", "海地"],
     userTeam: null,
     boardData: null,
     timeLineData: null,
@@ -226,14 +249,14 @@ export default {
       {
         event: '跳繩',
         round: ['輪流進行，每隊3回合，共6回合', '每回合3分鐘', '每回合每隊分別為3、4、5人上場，外加2名甩繩員'],
-        rule: ['兩隊各派一人猜拳，贏的可以選要先或後', '由各隊自行推派選手', '比賽進行間可換人上場，但損失的時間不會補給', '倒數30秒和時間結束時，裁判會提示'],
-        score: ['3人回合，連續跳2下，得1分', '4人回合，連續跳2下，得2分', '5人回合，連續跳2下，得3分', '此項目天花板就是最高25分', '若時間結束，哨聲響起，選手仍繼續跳則不列入計分']
+        rule: ['兩隊各派一人猜拳，贏的可以選要先或後', '由各隊自行推派選手', '比賽進行間可換人上場，但損失的時間不會補給', '倒數30秒和時間結束時，裁判會提示','不得干擾對手進行比賽'],
+        score: ['計分取每回合最高連續次數的得分','3人回合，連續跳2下，得1分', '4人回合，連續跳2下，得2分', '5人回合，連續跳2下，得3分','若連續次數為奇數，則多出那一下不計分，例如某回合最高連續次數為11下，則得分為5分', '此項目天花板就是最高25分', '若時間結束，哨聲響起，選手仍繼續跳則不列入計分']
       },
       {
         event: '擊劍',
         round: ['對抗制，男單、女單、男雙、女雙各2回合，共8回合', '每回合40秒'],
         rule: ['由隊內討論選出各回合參賽的劍士', '所有劍士手持泡棉棒，身穿魔鬼氈背心，背心或背帶上附有可被擊落的球', '劍士的目標是用泡棉棒擊落對方身上的球', '依實際男女出席狀況，評審將有權即時賽制調整'],
-        score: ['該回合擊落最多球者，單人賽得 2 分，雙人賽得 3 分', '若平手，則各得 1 分', '全部比賽結束後，贏最多局的隊伍再加 5 分']
+        score: ['該回合擊落最多球者，單人賽得 2 分，雙人賽得 3 分', '若平手，則各得 1 分', '全部比賽結束後，贏最多局的隊伍再加 5 分','此項目天花板為最高25分']
       },
       {
         event: '躲避球',
@@ -248,7 +271,8 @@ export default {
         win: ['比賽時白色標記被拉至場地中心線', '1分鐘結束後，以紅色線條偏向的隊伍方作為勝者'],
         score: ['拔河冠軍獲得25分', '拔河亞軍獲得20分', '拔河季軍、殿軍獲得15分', '拔河五～八強獲得10分']
       }
-    ]
+    ],
+    isHideEnd: true,
   }),
   computed: {
     ...mapState(useMainStore, ['tab', 'tabLabel', 'activeTeam', 'activeTeamData']),
@@ -258,7 +282,19 @@ export default {
     },
     selectedTimeLine() {
       if (!this.timeLineData) return 0
-      return this.timeLineData.find(team => team.country === this.activeTeam);
+      let ogData = this.timeLineData.find(team => team.country === this.activeTeam);
+      if (this.isHideEnd) {
+        return {
+          ...ogData,
+          matches: ogData.matches.filter(match => match.status === "尚未開始")
+        };
+      }
+      return ogData;
+    },
+    allTugOfWarCompleted() {
+      // 檢查所有的 tugofwarStatus 是否都等於 "比賽結束"
+      if (!this.boardData) return 0
+      return this.boardData.every(team => team.tugofwarStatus === "比賽結束");
     }
   },
   methods: {
@@ -341,7 +377,7 @@ export default {
     async fetchBoardData() {
       const apiKey = "AIzaSyBIk_3y0P0gliDInh146C0oCP1Bp0Xn5KY";
       const sheetId = "1wCI3m6UOnoViw_0sXajYelUpGzwVMkX6zK_mL5efmcA";
-      const range = "串接分數!A1:H6";
+      const range = "串接分數!A1:H11";
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
 
       try {
@@ -351,11 +387,16 @@ export default {
         const transposedData = this.transpose(sheetData);
         const formattedData = transposedData.map(row => ({
           country: row[0],
-          dodgeballScore: parseInt(row[1]) || 0,
-          fencingScore: parseInt(row[2]) || 0,
-          volleyballScore: parseInt(row[3]) || 0,
-          jumpropeScore: parseInt(row[4]) || 0,
-          tugofwarScore: parseInt(row[5]) || 0,
+          dodgeballScore: parseInt(row[1]) || 0,            // 躲避球分數
+          fencingScore: parseInt(row[2]) || 0,              // 擊劍分數
+          volleyballScore: parseInt(row[3]) || 0,           // 排球分數
+          jumpropeScore: parseInt(row[4]) || 0,             // 跳繩分數
+          tugofwarScore: parseInt(row[5]) || 0,             // 拔河分數
+          dodgeballStatus: row[6],                          // 躲避球狀態
+          fencingStatus: row[7],                            // 擊劍狀態
+          volleyballStatus: row[8],                         // 排球狀態
+          jumpropeStatus: row[9],                           // 跳繩狀態
+          tugofwarStatus: row[10],                          // 拔河狀態
           totalScore: parseInt(row[1]) + parseInt(row[2]) + parseInt(row[3]) + parseInt(row[4]) + parseInt(row[5])
         }));
         formattedData.sort((a, b) => b.totalScore - a.totalScore);
@@ -367,6 +408,7 @@ export default {
           team.rank = rank; // 新增名次欄位
         });
         this.boardData = formattedData;
+        console.log(this.boardData)
       } catch (error) {
         console.error("Error fetching board data:", error);
         throw error;
@@ -375,7 +417,7 @@ export default {
     async fetchTimeLineData() {
       const apiKey = "AIzaSyBIk_3y0P0gliDInh146C0oCP1Bp0Xn5KY";
       const sheetId = "1wCI3m6UOnoViw_0sXajYelUpGzwVMkX6zK_mL5efmcA";
-      const range = "串接賽程表!A1:H11";
+      const range = "串接賽程表!A1:H16";
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
 
       try {
@@ -385,14 +427,15 @@ export default {
         const formattedData = sheetData[0].map((team, index) => ({
           country: team,
           matches: [
-            { opponent: sheetData[1][index], event: sheetData[6][index] },
-            { opponent: sheetData[2][index], event: sheetData[7][index] },
-            { opponent: sheetData[3][index], event: sheetData[8][index] },
-            { opponent: sheetData[4][index], event: sheetData[9][index] },
-            { opponent: sheetData[5][index], event: sheetData[10][index] }
+            { opponent: sheetData[1][index], event: sheetData[6][index], status: sheetData[11][index] },
+            { opponent: sheetData[2][index], event: sheetData[7][index], status: sheetData[12][index] },
+            { opponent: sheetData[3][index], event: sheetData[8][index], status: sheetData[13][index] },
+            { opponent: sheetData[4][index], event: sheetData[9][index], status: sheetData[14][index] },
+            { opponent: sheetData[5][index], event: sheetData[10][index], status: sheetData[15][index] }
           ]
         }));
         this.timeLineData = formattedData;
+        console.log(this.timeLineData)
       } catch (error) {
         console.error("Error fetching timeline data:", error);
         throw error;
@@ -406,7 +449,7 @@ export default {
         "史瓦帝尼": "C",
         "瓜地馬拉": "D",
         "聖克里斯多福及尼維斯聯邦": "E",
-        "吐瓦魯國": "F",
+        "吐瓦魯": "F",
         "聖文森及格瑞那丁": "G",
         "海地": "H"
       };
@@ -458,7 +501,7 @@ export default {
           lgImage: require('../assets/E_lg.png'),
           smImage: require('../assets/E_sm.png'),
         },
-        '吐瓦魯國': {
+        '吐瓦魯': {
           className: 'tuvalu',
           lgImage: require('../assets/F_lg.png'),
           smImage: require('../assets/F_sm.png'),
@@ -504,6 +547,13 @@ export default {
   .panel-container {
     padding: 0 16px 16px 16px;
 
+    .title-list {
+      padding-left: 16px;
+      padding-right: 56px;
+      color: #fff;
+      font-size: 14px;
+    }
+
     .header-item {
       padding-right: 16px;
 
@@ -540,14 +590,14 @@ export default {
         padding: 8px 56px 8px 78px;
 
         .activity-name {
-          font-size: 12px;
+          font-size: 14px;
           font-weight: 400;
           text-align: left;
 
         }
 
         .score {
-          font-size: 12px;
+          font-size: 14px;
           font-weight: 400;
           text-align: right;
 
@@ -645,7 +695,7 @@ export default {
       }
 
       .team-member {
-        word-break: break-all;
+        // word-break: break-all;
       }
     }
 
@@ -664,9 +714,23 @@ export default {
   }
 
   .timeline-container {
+    .btn-hideend {
+      color: #fff;
+      text-align: left;
+      border: 1px solid #D1D5E5;
+      background-color: rgba($color: #fff, $alpha: 0.2);
+      font-size: 14px;
+      font-weight: 500;
+      width: 100%;
+      height: 45px;
+      line-height: 45px;
+      border-radius: 8px;
+    }
+
     .card-container {
       gap: 16px;
       position: relative;
+      overflow-x: hidden;
 
       &::before {
         position: absolute;
@@ -686,6 +750,11 @@ export default {
         border-radius: 12px;
         position: relative;
 
+        &.disabled {
+          opacity: .2;
+        }
+
+
         &::before {
           content: '';
           display: block;
@@ -699,6 +768,17 @@ export default {
           top: 50%;
           transform: translateY(-50%);
         }
+
+        // &::after {
+        //   background-color: rgba($color: #fff, $alpha: 0.2);
+        //   position: absolute;
+        //   width: 600px;
+        //   height: calc(100% + 16px);
+        //   left: -50px;
+        //   top: -16px;
+        //   position: absolute;
+        //   content: '';
+        // }
 
         .card-header {
           font-size: 16px;
@@ -813,7 +893,7 @@ export default {
 
   .popup-container {
     position: absolute;
-    top: 0;
+    top: 20px;
     max-width: 600px;
     width: 100%;
     left: 50%;
@@ -833,7 +913,7 @@ export default {
     .popup-content {
       border-radius: 0 0 16px 16px;
       background-color: #fff;
-      max-height: calc(100vh - 62px - 84px);
+      max-height: calc(100vh - 62px - 40px);
       overflow-y: scroll;
 
       .rule-title {

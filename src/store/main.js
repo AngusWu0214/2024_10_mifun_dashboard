@@ -57,7 +57,7 @@ export const useMainStore = defineStore('Main', {
                 lgImage: require('../assets/E_lg.png'),
                 smImage: require('../assets/E_sm.png'),
               },
-              '吐瓦魯國': {
+              '吐瓦魯': {
                 className: 'tuvalu',
                 lgImage: require('../assets/F_lg.png'),
                 smImage: require('../assets/F_sm.png'),

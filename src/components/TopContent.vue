@@ -80,6 +80,8 @@ export default {
     background-size: 100% auto;
     background-position: center center;
     margin: 0 auto;
-
+    img{
+        width: 180px;
+    }
 }
 </style>
