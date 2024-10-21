@@ -2,7 +2,7 @@
   <v-container fluid pa-0>
     <div class="main-inner" id="mainarea">
       <transition name="fade" mode="out-in">
-        <div class="tab-title" :key="tab">
+        <div class="tab-title" :class="tab" :key="tab">
           {{ tabLabel }}
         </div>
       </transition>
@@ -97,8 +97,9 @@
 
           <transition name="fade" mode="out-in">
             <div class="card-container px-4 d-flex flex-column align-end" v-if="activeTeam">
-              <div class="card pa-3" :class="{ disabled: selectedTimeLine.matches[0].status === '比賽結束' }"
-                v-if="!isHideEnd || selectedTimeLine.length < 5">
+              <div class="card pa-3"
+                :class="{ disabled: selectedTimeLine.matches.length < 5 || selectedTimeLine.matches[0].status === '比賽結束' }"
+                v-if="!isHideEnd || selectedTimeLine.matches.length == 5">
                 <div class="card-header mb-4 d-flex justify-start align-center">
                   <div class="activity-name">開幕式</div>
                 </div>
@@ -249,14 +250,14 @@ export default {
       {
         event: '跳繩',
         round: ['輪流進行，每隊3回合，共6回合', '每回合3分鐘', '每回合每隊分別為3、4、5人上場，外加2名甩繩員'],
-        rule: ['兩隊各派一人猜拳，贏的可以選要先或後', '由各隊自行推派選手', '比賽進行間可換人上場，但損失的時間不會補給', '倒數30秒和時間結束時，裁判會提示','不得干擾對手進行比賽'],
-        score: ['計分取每回合最高連續次數的得分','3人回合，連續跳2下，得1分', '4人回合，連續跳2下，得2分', '5人回合，連續跳2下，得3分','若連續次數為奇數，則多出那一下不計分，例如某回合最高連續次數為11下，則得分為5分', '此項目天花板就是最高25分', '若時間結束，哨聲響起，選手仍繼續跳則不列入計分']
+        rule: ['兩隊各派一人猜拳，贏的可以選要先或後', '由各隊自行推派選手', '比賽進行間可換人上場，但損失的時間不會補給', '倒數30秒和時間結束時，裁判會提示', '不得干擾對手進行比賽'],
+        score: ['計分取每回合最高連續次數的得分', '3人回合，連續跳2下，得1分', '4人回合，連續跳2下，得2分', '5人回合，連續跳2下，得3分', '若連續次數為奇數，則多出那一下不計分，例如某回合最高連續次數為11下，則得分為5分', '此項目天花板就是最高25分', '若時間結束，哨聲響起，選手仍繼續跳則不列入計分']
       },
       {
         event: '擊劍',
         round: ['對抗制，男單、女單、男雙、女雙各2回合，共8回合', '每回合40秒'],
         rule: ['由隊內討論選出各回合參賽的劍士', '所有劍士手持泡棉棒，身穿魔鬼氈背心，背心或背帶上附有可被擊落的球', '劍士的目標是用泡棉棒擊落對方身上的球', '依實際男女出席狀況，評審將有權即時賽制調整'],
-        score: ['該回合擊落最多球者，單人賽得 2 分，雙人賽得 3 分', '若平手，則各得 1 分', '全部比賽結束後，贏最多局的隊伍再加 5 分','此項目天花板為最高25分']
+        score: ['該回合擊落最多球者，單人賽得 2 分，雙人賽得 3 分', '若平手，則各得 1 分', '全部比賽結束後，贏最多局的隊伍再加 5 分', '此項目天花板為最高25分']
       },
       {
         event: '躲避球',
@@ -542,6 +543,37 @@ export default {
     text-align: center;
     color: #fff;
     margin-bottom: 16px;
+
+    &::before {
+      position: absolute;
+      content: '';
+      display: block;
+      width: calc(355px / 3);
+      height: calc(102px / 3);
+      background-image: url(../assets/title_bg_sm.png);
+      background-size: cover;
+      background-repeat: no-repeat;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 15px;
+    }
+
+    &.team {
+      &::before {
+        position: absolute;
+        content: '';
+        display: block;
+        width: calc(445px / 3);
+        height: calc(102px / 3);
+        background-image: url(../assets/title_bg_lg.png);
+        background-size: cover;
+        background-repeat: no-repeat;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 15px;
+      }
+    }
+
   }
 
   .panel-container {
