@@ -937,7 +937,7 @@ export default {
     top: 50%;
     transform: translate(-50%, -50%);
     border-radius: 16px;
-    max-height: calc(100vh - 40px);
+    max-height: calc(75vh);
 
     .popup-header {
       background-color: #fff;
@@ -952,7 +952,7 @@ export default {
     .popup-content {
       border-radius: 0 0 16px 16px;
       background-color: #fff;
-      max-height: calc(100vh - 62px - 40px);
+      max-height: calc(75vh - 62px);
       overflow-y: scroll;
 
       .rule-title {
