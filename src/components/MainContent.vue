@@ -91,7 +91,7 @@
         </div>
         <div class="timeline-container px-2" :key="tab" v-if="tab == 'timeline'">
           <transition name="fade" mode="out-in">
-            <div class="btn-hideend px-4 mb-4 mt-4" v-if="activeTeam" @click="isHideEnd = !isHideEnd">{{ isHideEnd ?
+            <div class="btn-hideend px-4 mb-4 mt-4" v-if="activeTeam && !allMatchesNotStarted" @click="isHideEnd = !isHideEnd">{{ isHideEnd ?
               '顯示已結束的活動' : '隱藏已結束的活動' }}</div>
           </transition>
 
@@ -249,9 +249,9 @@ export default {
       },
       {
         event: '跳繩',
-        round: ['輪流進行，每隊3回合，共6回合', '每回合3分鐘', '每回合每隊分別為3、4、5人上場，外加2名甩繩員'],
+        round: ['輪流進行，每隊3回合', '每回合2分鐘', '每回合每隊分別為3、4、5人上場，外加2名甩繩員','比賽開始前每隊輪流，各有2分鐘的暖身時間'],
         rule: ['兩隊各派一人猜拳，贏的可以選要先或後', '由各隊自行推派選手', '比賽進行間可換人上場，但損失的時間不會補給', '倒數30秒和時間結束時，裁判會提示', '不得干擾對手進行比賽'],
-        score: ['計分取每回合最高連續次數的得分', '3人回合，連續跳2下，得1分', '4人回合，連續跳2下，得2分', '5人回合，連續跳2下，得3分', '若連續次數為奇數，則多出那一下不計分，例如某回合最高連續次數為11下，則得分為5分', '此項目天花板就是最高25分', '若時間結束，哨聲響起，選手仍繼續跳則不列入計分']
+        score: ['計分取每回合最高連續次數的得分', '每回合，連續跳2下，得1分', '若連續次數為奇數，則多出那一下不計分，例如某回合最高連續次數為11下，則得分為5分', '此項目天花板就是最高25分', '若時間結束，哨聲響起，選手仍繼續跳則不列入計分']
       },
       {
         event: '擊劍',
@@ -296,6 +296,11 @@ export default {
       // 檢查所有的 tugofwarStatus 是否都等於 "比賽結束"
       if (!this.boardData) return 0
       return this.boardData.every(team => team.tugofwarStatus === "比賽結束");
+    },
+    allMatchesNotStarted(){
+      if (!this.timeLineData || !this.activeTeam) return 0;
+      let ogData = this.timeLineData.find(team => team.country === this.activeTeam);
+      return ogData.matches.every(match => match.status === '尚未開始')
     }
   },
   methods: {
