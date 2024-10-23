@@ -202,8 +202,24 @@
               <div class="title-content">規則</div>
               <div class="line"></div>
             </div>
-            <ul class="rule-content mb-4">
+            <ul class="rule-content mb-4" v-if="activePopup.rule">
               <li v-for="(item, index) in activePopup.rule" :key="index">{{ item }}</li>
+            </ul>
+            <ul class="rule-content mb-4" v-if="activePopup.process">
+              <div class="rule-special-title">比賽過程</div>
+              <li v-for="(item, index) in activePopup.process" :key="index">{{ item }}</li>
+            </ul>
+            <ul class="rule-content mb-4" v-if="activePopup.bounds">
+              <div class="rule-special-title">出界認定（更換球權）</div>
+              <li v-for="(item, index) in activePopup.bounds" :key="index">{{ item }}</li>
+            </ul>
+            <ul class="rule-content mb-4" v-if="activePopup.win">
+              <div class="rule-special-title">獲勝判定</div>
+              <li v-for="(item, index) in activePopup.win" :key="index">{{ item }}</li>
+            </ul>
+            <ul class="rule-content mb-4" v-if="activePopup.tips">
+              <div class="rule-special-title">比賽場地上有中心線標註</div>
+              <li v-for="(item, index) in activePopup.tips" :key="index">{{ item }}</li>
             </ul>
             <div class="rule-title point d-flex justify-space-between align-center mb-3">
               <div class="title-content">計分</div>
@@ -212,6 +228,8 @@
             <ul class="rule-content mb-4">
               <li v-for="(item, index) in activePopup.score" :key="index">{{ item }}</li>
             </ul>
+            <div class="divider"></div>
+            <div class="protect-text">若違反運動家精神，裁判有權介入處理。</div>
             <div class="popup-footer d-flex justify-center align-center">
               <div class="btn-agree px-4" @click="closePopup">我了解哩</div>
             </div>
@@ -257,19 +275,21 @@ export default {
       {
         event: '擊劍',
         round: ['對抗制，男單、女單、男雙、女雙各2回合，共8回合', '每回合40秒'],
-        rule: ['由隊內討論選出各回合參賽的劍士', '所有劍士手持泡棉棒，身穿魔鬼氈背心，背心或背帶上附有可被擊落的球', '劍士的目標是用泡棉棒擊落對方身上的球', '依實際男女出席狀況，評審將有權即時賽制調整'],
-        score: ['該回合擊落最多球者，單人賽得 2 分，雙人賽得 3 分', '若平手，則各得 1 分', '全部比賽結束後，贏最多局的隊伍再加 5 分', '此項目天花板為最高25分']
+        rule: ['由隊內討論選出各回合參賽的劍士', '所有劍士手持泡棉棒，身穿魔鬼氈背心，背心或背帶上附有可被擊落的球', '劍士的目標是用泡棉棒擊落對方身上的球', '僅能用劍碰觸對方', '依實際男女出席狀況，評審將有權即時賽制調整'],
+        score: ['該回合擊落最多球者得 3 分', '若平手，則各得 2 分']
       },
       {
         event: '躲避球',
-        round: ['對抗制，共3回合', '每回合6分鐘，若某隊得到8分則提前結束該回合', '每回合每隊外場2人，內場6人'],
-        rule: ['開場球權爭奪：球置於場中央，雙方球員從後方紅線起跑衝搶球', '奪球後，須先回場踩到紅線，才能發動攻擊', '內場球員若被擊中，視為出局並前往外場', '外場球員擊中敵方內場球員，則復活並進入內場', '場內若僅剩一位球員，該球員被擊中不會出局', '出界為從寬認定，球員踩線不算出界', '男性需雙手擲球，女性不限', '裁判暫停響哨後，擲出的球無效'],
-        score: ['採累計制，擊中對手內場得1分', '每回合最高分為8分', '若回合結束，雙方皆未奪下8分，人多的一方+1分', '若回合結束，雙方人數相同時，各+1分', '此項目天花板為總和24分']
+        round: ['採對抗制，共3回合', '每回合6分鐘，當時間結束、或一方內場球員都出局，則該回合結束', '回合初始，每隊外場1人，內場7人'],
+        process: ['內場球員被擊中，視為出局前往外場', '外場球員擊中敵方內場球員，則復活進入內場', '男性需雙手擲球，女性不限', '裁判響哨時，擲出的球不算', '若故意拖延時間（5秒為原則），裁判有權喊停交換球權'],
+        bounds: ['內場：球員出界從寬認定，踩線不算出界，需整隻腳超出才算出界', '外場：縱向為木板區交界、橫向為黑線，球滾至黑線外即為出界。'],
+        score: ['當回合結束，內場人數較多一方為贏家，得8分；輸家得4分；平手則雙方各6分', '此項目天花板為總和24分']
       },
       {
         event: '拔河',
-        round: ['每場比賽有3 回合，採3戰2勝制', '每回合1分鐘', '每回合由兩隊進行，參賽人數以當天出席人數最少的隊伍為基準(視情況扣除因傷缺席的人員)'],
-        rule: ['八強賽4場，四強賽2場，冠軍賽1場，全員共有7場比賽', '比賽場地上有中心線標註', '繩子中間處有紅色標記，左右4公尺處各有一個白色標記，左右5公尺處各有一個藍色標記', '雙方從藍色標記開始交錯站位，最後一位握繩其子必須從身體前方沿著至背部，再斜上對側肩上，多餘的繩子應經由腋下向後；不可將纏繞身體'],
+        round: ['每場比賽有3 回合，採3戰2勝制', '每回合1分鐘', '每回合由兩隊進行，參賽人數共 7 人，男女比 2:5'],
+        rule: ['八強賽4場，四強賽2場，冠軍賽1場，全員共有7場比賽'],
+        tips:['繩上中間處將有紅色標記，左右地上各有一個標記','雙方從標記開始交錯站位，最後一位握繩其子必須從身體前方沿著至背部，再斜上對側肩上，多餘的繩子應經由腋下向後；不可將其纏繞身體'],
         win: ['比賽時白色標記被拉至場地中心線', '1分鐘結束後，以紅色線條偏向的隊伍方作為勝者'],
         score: ['拔河冠軍獲得25分', '拔河亞軍獲得20分', '拔河季軍、殿軍獲得15分', '拔河五～八強獲得10分']
       }
@@ -1023,6 +1043,23 @@ export default {
           }
         }
 
+        .rule-special-title {
+          transform: translateX(-24px);
+        }
+      }
+
+      .divider {
+        width: 100%;
+        height: 1px;
+        background-color: #8C95BD;
+        margin-bottom: 8px;
+      }
+
+      .protect-text {
+        font-size: 12px;
+        font-weight: 400;
+        text-align: center;
+        margin-bottom: 16px;
       }
     }
 
